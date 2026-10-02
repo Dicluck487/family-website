@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Mugisa Family</title>
+<style>
+:root{--bg:#faf6ee;--card:#fff;--ink:#2b2a25;--mut:#6d6a5f;--acc:#2f6b4f;--gold:#b8862b;--line:#e6dfcf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191a;--card:#202423;--ink:#eee9dc;--mut:#a9a595;--acc:#6fbf98;--gold:#d9a949;--line:#33382f}}
+:root[data-theme="dark"]{--bg:#17191a;--card:#202423;--ink:#eee9dc;--mut:#a9a595;--acc:#6fbf98;--gold:#d9a949;--line:#33382f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,'Times New Roman',serif}
+.w{max-width:960px;margin:0 auto;padding:0 16px 48px}
+header{text-align:center;padding:36px 0 20px}
+header small{letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font:600 12px system-ui,sans-serif}
+h1{margin:6px 0;font-size:clamp(28px,7vw,44px);color:var(--acc)}
+header p{color:var(--mut);margin:0}
+.stats{display:flex;gap:10px;justify-content:center;margin:18px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 18px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--acc)}
+.stat span{font:12px system-ui,sans-serif;color:var(--mut)}
+.bar{display:flex;gap:8px;margin:8px 0 18px}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:15px system-ui,sans-serif}
+button{font:600 14px system-ui,sans-serif;border:0;border-radius:10px;padding:10px 14px;background:var(--acc);color:#fff;cursor:pointer;white-space:nowrap}
+button.g{background:transparent;color:var(--acc);border:1px solid var(--line)}
+button.d{background:transparent;color:#b3382c;border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:14px;padding:16px}
+.card h3{margin:0;font-size:20px}
+.meta{color:var(--mut);font:14px system-ui,sans-serif;margin:2px 0}
+.gc{list-style:none;padding:0;margin:12px 0;border-top:1px dashed var(--line)}
+.gc li{padding:5px 0;font-size:15px}
+.gc small{color:var(--mut);font-family:system-ui,sans-serif}
+.empty{color:var(--mut);font:italic 14px system-ui,sans-serif;margin:12px 0}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:9}
+.m{background:var(--bg);width:100%;max-width:520px;max-height:92%;overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+.m label{display:block;font:600 13px system-ui,sans-serif;margin:12px 0 4px;color:var(--mut)}
+.row{display:flex;gap:8px;margin-top:16px}
+footer{text-align:center;color:var(--mut);font:13px system-ui,sans-serif;margin-top:32px}
+</style></head><body><div id="app"></div>
+<script type="application/json" id="data">{"kids":[{"id":"c1","name":"Child 1","spouse":"","phone":"","note":"","gc":[]},{"id":"c2","name":"Child 2","spouse":"","phone":"","note":"","gc":[]},{"id":"c3","name":"Child 3","spouse":"","phone":"","note":"","gc":[]},{"id":"c4","name":"Child 4","spouse":"","phone":"","note":"","gc":[]},{"id":"c5","name":"Child 5","spouse":"","phone":"","note":"","gc":[]},{"id":"c6","name":"Child 6","spouse":"","phone":"","note":"","gc":[]},{"id":"c7","name":"Child 7","spouse":"","phone":"","note":"","gc":[]},{"id":"c8","name":"Child 8","spouse":"","phone":"","note":"","gc":[]},{"id":"c9","name":"Child 9","spouse":"","phone":"","note":"","gc":[]},{"id":"c10","name":"Child 10","spouse":"","phone":"","note":"","gc":[]}]}</script>
+<script>
+const D=JSON.parse(document.getElementById('data').textContent);
+const app=document.getElementById('app');let q='';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gcText=k=>k.gc.map(g=>g.name+(g.year?' - '+g.year:'')).join('\n');
+const parseGc=t=>t.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(.*?)\s*[-,–]\s*(\d{4})$/);return m?{name:m[1],year:m[2]}:{name:l,year:''}});
+function build(){const c=document.documentElement.cloneNode(true);c.querySelector('#app').innerHTML='';
+c.querySelector('#data').textContent=JSON.stringify(D).replace(/</g,'\\u003c');return '<!DOCTYPE html>'+c.outerHTML}
+async function save(){render();try{const a=await claude.use('artifact');
+if(!a){alert('Only family editors can save changes.');return}
+await a.publish(build())}catch(e){if(e&&e.code!=='conflict')alert('Could not save: '+(e.code||e.message))}}
+function render(){const ks=D.kids.filter(k=>!q||JSON.stringify(k).toLowerCase().includes(q));
+const n=D.kids.reduce((s,k)=>s+k.gc.length,0);
+app.innerHTML=`<div class=w><header><small>Our Family</small><h1>The Mugisa Family</h1><p>Descendants of Mr. Mugisa Deogratious</p>
+<div class=stats><div class=stat><b>${D.kids.length}</b><span>Children</span></div><div class=stat><b>${n}</b><span>Grandchildren</span></div></div></header>
+<div class=bar><input id=s placeholder="Search a name…" value="${esc(q)}"><button id=add>+ Add child</button></div>
+<div class=grid>${ks.map(k=>`<article class=card><h3>${esc(k.name)}</h3>
+${k.spouse?`<div class=meta>Spouse: ${esc(k.spouse)}</div>`:''}${k.phone?`<div class=meta>📞 ${esc(k.phone)}</div>`:''}${k.note?`<div class=meta>${esc(k.note)}</div>`:''}
+${k.gc.length?`<ul class=gc>${k.gc.map(g=>`<li>${esc(g.name)} ${g.year?`<small>b. ${esc(g.year)}</small>`:''}</li>`).join('')}</ul>`:'<p class=empty>No children added yet</p>'}
+<button class=g data-e="${k.id}">Edit</button></article>`).join('')}</div>
+<footer>Family is where life begins and love never ends.</footer></div>`;
+const s=document.getElementById('s');s.oninput=e=>{q=e.target.value.toLowerCase();const p=e.target.selectionStart;render();const n=document.getElementById('s');n.focus();n.setSelectionRange(p,p)};
+document.getElementById('add').onclick=()=>form();
+app.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>form(b.dataset.e))}
+function form(id){const k=id?D.kids.find(x=>x.id===id):{id:'c'+Date.now(),name:'',spouse:'',phone:'',note:'',gc:[]};
+const o=document.createElement('div');o.className='ov';
+o.innerHTML=`<div class=m><h2 style="margin:0;color:var(--acc)">${id?'Edit':'Add'} child</h2>
+<label>Name</label><input id=fn value="${esc(k.name)}"><label>Spouse</label><input id=fs value="${esc(k.spouse)}">
+<label>Phone</label><input id=fp value="${esc(k.phone)}"><label>Note (town, work…)</label><input id=fo value="${esc(k.note)}">
+<label>Their children — one per line, e.g. "Mary - 2015"</label><textarea id=fg rows=6>${esc(gcText(k))}</textarea>
+<div class=row><button id=ok>Save</button><button class=g id=no>Cancel</button>${id?'<button class=d id=rm>Delete</button>':''}</div></div>`;
+app.appendChild(o);const v=i=>document.getElementById(i).value.trim();
+o.onclick=e=>{if(e.target===o)o.remove()};document.getElementById('no').onclick=()=>o.remove();
+document.getElementById('ok').onclick=()=>{if(!v('fn')){alert('Please enter a name');return}
+Object.assign(k,{name:v('fn'),spouse:v('fs'),phone:v('fp'),note:v('fo'),gc:parseGc(document.getElementById('fg').value)});
+if(!id)D.kids.push(k);save()};
+if(id)document.getElementById('rm').onclick=()=>{if(confirm('Delete '+k.name+'?')){D.kids=D.kids.filter(x=>x.id!==id);save()}}}
+render();
+</script></body></html>
